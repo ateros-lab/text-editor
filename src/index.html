@@ -1,0 +1,72 @@
+<head>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+</head>
+<body>
+  <div id="left-side">
+    <input id="create-input" type="text" />
+    <i id="add-icon" onclick="addIconClick()" class="material-icons">add</i>
+  </div> 
+  <div id="right-side">
+    <h1 id="title"></h1>
+    <i id="save-icon" onclick="saveIconClick()" class="material-icons">save</i>
+    <i id="del-icon" onclick="delIconClick()" class="material-icons">delete</i>
+    <textarea autofocus oninput="textareaInput()"></textarea>
+  </div>
+  
+  <script>
+    // Извлечение тегов из разметки
+    let rightSide = window.document.querySelector('#right-side');
+    let title = window.document.querySelector('#title');
+    let textarea = window.document.querySelector('textarea');
+    let createInput = window.document.querySelector('#create-input');
+    let saveIcon = window.document.querySelector('#save-icon');
+
+    // Получение списка файлов
+    const addFileListItem = (fileName) => {
+      let div = window.document.createElement('div');
+      let p = window.document.createElement('p');
+      let i = window.document.createElement('i');
+      p.innerText = fileName;
+      p.className = 'file-name';
+      i.className = 'material-icons file-icon';
+      i.innerText = 'description';
+      div.className = 'file-block';
+      div.appendChild(i);
+      div.appendChild(p);
+      div.addEventListener('click', () => {
+        rightSide.style.display = 'block';
+        title.innerText = fileName;
+        textarea.value = window.electron.readFile(fileName);
+      });
+      window.document.querySelector('#left-side').appendChild(div);
+    }
+    const getFileList = () => {
+      let files = window.electron.getFileNames();
+      if(files) {
+        let filesArray = files.split('\n');
+        filesArray.map(elem => addFileListItem(elem));
+      }
+    }
+    getFileList();
+
+    // Обработчики событий
+    const addIconClick = () => {
+      if(createInput.value){
+        window.electron.createFile(createInput.value);
+        window.location.reload();
+      }
+    }
+    const saveIconClick = () => {
+      window.electron.writeFile(title.innerText, textarea.value);
+      saveIcon.style.color = 'var(--text-color)';
+    }
+    const textareaInput = () => {
+      saveIcon.style.color = 'var(--active-color)';
+    }
+    const delIconClick = () => {
+      window.electron.deleteFile(title.innerText);
+      window.location.reload();
+    }
+  </script>
+</body>
